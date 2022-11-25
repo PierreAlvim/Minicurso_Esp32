@@ -1,9 +1,13 @@
 #include <Arduino.h>
+#include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 
-const char ssid[] = "SSID";
-const char password[] = "pass";
+
+WebServer server(80);
+
+const char ssid[] = "House";
+const char password[] = "africaSul456";
 
 void setup() {
   // put your setup code here, to run once:
@@ -20,13 +24,21 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  pinMode(2,OUTPUT);
+  server.on("/", []() {
+    server.send(200, "text/plain", "Hello, world!");
+    digitalWrite(2, HIGH);
+    delay(100);
+    digitalWrite(2, LOW);
+    delay(100);
+  });
+
+  server.begin();
+  Serial.println("HTTP server started");
+
+  pinMode(2, OUTPUT);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(2,HIGH);
-  delay(1000);
-  digitalWrite(2,LOW);
-  delay(1000);
+  server.handleClient();
 }
