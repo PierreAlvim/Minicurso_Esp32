@@ -2,12 +2,13 @@
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
-
+#include <ESPmDNS.h>
 
 WebServer server(80);
 
 const char ssid[] = "House";
 const char password[] = "africaSul456";
+const char hostname[] = "Esp32_pierre";
 
 void setup() {
   // put your setup code here, to run once:
@@ -23,6 +24,11 @@ void setup() {
   Serial.println(ssid);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  
+    if (MDNS.begin(hostname)) {
+    Serial.println("MDNS responder started:");
+    Serial.println(hostname);
+  }
 
   server.on("/", []() {
     server.send(200, "text/plain", "Hello, world!");
