@@ -1,12 +1,13 @@
 #include <Arduino.h>
+#include <AsyncTCP.h>
 #include <ESP32Servo.h>
+#include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
-#include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <uri/UriBraces.h>
 
-WebServer server(80);
+AsyncWebServer server(80);
 
 const char ssid[] = "House";
 const char password[] = "africaSul456";
@@ -40,30 +41,35 @@ void setup() {
     Serial.println(hostname);
   }
 
-  server.on("/", []() {
-    server.send(200, "text/plain", "Hello, world!");
+  server.on("/", [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "Hello, world!");
     digitalWrite(LED_PIN, HIGH);
     delay(100);
     digitalWrite(LED_PIN, LOW);
     delay(100);
   });
 
-  server.on(UriBraces("/servo/{}"), []() {
-    server.send(200, "text/plain", "Servo Acionado");
-    String param = server.pathArg(0);
-    int ang = param.toInt();
-    if (ang > 180)
-      ang = 180;
-    else if (ang < 0)
-      ang = 0;
+
+  server.on("/servo", [](AsyncWebServerRequest *request) {
+    if (request->hasParam("ang")) {
+      auto param = request->getParam("ang");
+      int ang = param->value().toInt();
+      if (ang > 180)
+        ang = 180;
+      else if (ang < 0)
+        ang = 0;
+      myservo.write(ang);
+      request->send(200, "text/plain", "Servo Acionado: " + param->value());
+    } else {
+      request->send(412,"falta o angulo");
+    }
   });
 
   server.begin();
   Serial.println("HTTP server started");
-
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  server.handleClient();
+  // server.handleClient();
 }
