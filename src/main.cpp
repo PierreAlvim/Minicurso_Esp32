@@ -18,33 +18,9 @@ const char hostname[] = "Esp32_pierre";
 
 Servo myservo;
 
-const char* homepage PROGMEM = R"RAW(
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
-    <title>LED Control</title>
-    <style>
-        *{
-            font-family: 'Trebuchet MS', sans-serif;
-        }
-    </style>
-    <script>
-        function acionaLed(){
-            fetch('/led')
-        }
-    </script>
-  </head>
-  <body>
-    <h1>ESP32 Web Server</h1>
-    <h3>Led:</h3>
-    <input type="button" value="Liga Led" onclick="acionaLed()">
-  </body>
-</html>
-)RAW";
+const char* homepage PROGMEM = {
+#include "index.html"
+};
 
 void setup() {
   // put your setup code here, to run once:

@@ -1,0 +1,46 @@
+R"RAW(
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>LED Control</title>
+    <style>
+      * {
+        font-family: "Trebuchet MS", sans-serif;
+      }
+      body {
+        text-align: center;
+      }
+    </style>
+    <script>
+      window.onload = () => {
+        var btLed = document.querySelector("#btLed");
+
+        btLed.addEventListener("click", () => {
+          fetch("/led");
+        });
+
+        var servoRange = document.querySelector("#servoRange");
+
+        servoRange.addEventListener("change", (e) => {
+          var angulo = e.target.value;
+          fetch("/servo?ang=" + angulo, { method: "GET" });
+        })
+      };
+    </script>
+  </head>
+  <body>
+    <h1>ESP32 Web Server</h1>
+    <div>
+      <h3>LED:</h3>
+      <input id="btLed" type="button" value="Liga Led" />
+      <h3>SERVO:</h3>
+      <input id="servoRange" type="range" value="Liga Led" min="0" max="180"/>
+    </div>
+    >
+  </body>
+</html>
+)RAW"
