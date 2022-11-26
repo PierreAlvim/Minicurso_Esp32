@@ -18,6 +18,34 @@ const char hostname[] = "Esp32_pierre";
 
 Servo myservo;
 
+const char* homepage PROGMEM = R"RAW(
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>LED Control</title>
+    <style>
+        *{
+            font-family: 'Trebuchet MS', sans-serif;
+        }
+    </style>
+    <script>
+        function acionaLed(){
+            fetch('/led')
+        }
+    </script>
+  </head>
+  <body>
+    <h1>ESP32 Web Server</h1>
+    <h3>Led:</h3>
+    <input type="button" value="Liga Led" onclick="acionaLed()">
+  </body>
+</html>
+)RAW";
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -42,11 +70,7 @@ void setup() {
   }
 
   server.on("/", [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Hello, world!");
-    digitalWrite(LED_PIN, HIGH);
-    delay(100);
-    digitalWrite(LED_PIN, LOW);
-    delay(100);
+    request->send(200, "text/html", homepage);
   });
 
 
@@ -63,6 +87,12 @@ void setup() {
     } else {
       request->send(412,"falta o angulo");
     }
+  });
+
+  server.on("/led", [](AsyncWebServerRequest *request) {
+    bool out = !digitalRead(LED_PIN);
+    digitalWrite(LED_PIN, out);
+    request->send(200, "text/plain", String(out));
   });
 
   server.begin();
