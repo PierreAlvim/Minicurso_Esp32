@@ -14,21 +14,43 @@ R"RAW(
       body {
         text-align: center;
       }
+      input.btOn {
+        background-color: #4caf50;
+        border: none;
+        color: white;
+        padding: 16px 40px;
+      }
+      input.btOff {
+        background-color: #000000;
+        border: none;
+        color: rgb(255, 255, 255);
+        padding: 16px 40px;
+      }
     </style>
     <script>
       window.onload = () => {
         var btLed = document.querySelector("#btLed");
-
+        function alternaBt(ligado) {
+          if (ligado == 1) {
+            btLed.setAttribute("class", "btOn");
+            btLed.setAttribute("value", "Desligar");
+          } else {
+            btLed.setAttribute("class", "btOff");
+            btLed.setAttribute("value", "Ligar");
+          }
+        }
         btLed.addEventListener("click", () => {
-          fetch("/led");
+          fetch("/led")
+            .then((response) => response.text())
+            .then((text) => alternaBt(text));
         });
 
         var servoRange = document.querySelector("#servoRange");
 
-        servoRange.addEventListener("change", (e) => {
+        servoRange.addEventListener("input", (e) => {
           var angulo = e.target.value;
-          fetch("/servo?ang=" + angulo, { method: "GET" });
-        })
+          fetch("/servo", { method: "POST", body: JSON.stringify({ang:angulo})});
+        });
       };
     </script>
   </head>
@@ -36,11 +58,10 @@ R"RAW(
     <h1>ESP32 Web Server</h1>
     <div>
       <h3>LED:</h3>
-      <input id="btLed" type="button" value="Liga Led" />
+      <input id="btLed" class="btOff" type="button" value="Ligar" />
       <h3>SERVO:</h3>
-      <input id="servoRange" type="range" value="Liga Led" min="0" max="180"/>
+      <input id="servoRange" type="range" value="Liga Led" min="0" max="180" />
     </div>
-    >
   </body>
 </html>
 )RAW"

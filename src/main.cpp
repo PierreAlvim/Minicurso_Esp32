@@ -5,7 +5,9 @@
 #include <ESPmDNS.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <uri/UriBraces.h>
+
+#include <ArduinoJson.h>
+#include <AsyncJson.h>
 
 AsyncWebServer server(80);
 
@@ -18,7 +20,7 @@ const char hostname[] = "Esp32_pierre";
 
 Servo myservo;
 
-const char* homepage PROGMEM = {
+const char *homepage PROGMEM = {
 #include "index.html"
 };
 
@@ -49,21 +51,36 @@ void setup() {
     request->send(200, "text/html", homepage);
   });
 
-
-  server.on("/servo", [](AsyncWebServerRequest *request) {
-    if (request->hasParam("ang")) {
-      auto param = request->getParam("ang");
-      int ang = param->value().toInt();
-      if (ang > 180)
-        ang = 180;
-      else if (ang < 0)
-        ang = 0;
-      myservo.write(ang);
-      request->send(200, "text/plain", "Servo Acionado: " + param->value());
-    } else {
-      request->send(412,"falta o angulo");
+  server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data,
+                          size_t len, size_t index, size_t total) {
+    if (request->url() == "/servo") {
+      StaticJsonDocument<256> buff;
+      auto error = deserializeJson(buff, (const char *)data);
+      if (error)
+        request->send(402, "text/plain", "error");
+      else if (buff.containsKey("ang")) {
+        int ang = buff["ang"].as<int>();
+        myservo.write(ang);
+        request->send(200, "text/plain", "end");
+      }
+      request->send(412, "text/plain", "end");
     }
   });
+
+  // server.on("/servo", HTTP_POST, [](AsyncWebServerRequest *request) {
+  //   if (request->) {
+  //     auto param = request->getParam("ang");
+  //     int ang = param->value().toInt();
+  //     if (ang > 180)
+  //       ang = 180;
+  //     else if (ang < 0)
+  //       ang = 0;
+  //     myservo.write(ang);
+  //     request->send(200, "text/plain", "Servo Acionado: " + param->value());
+  //   } else {
+  //     request->send(412, "falta o angulo");
+  //   }
+  // });
 
   server.on("/led", [](AsyncWebServerRequest *request) {
     bool out = !digitalRead(LED_PIN);
