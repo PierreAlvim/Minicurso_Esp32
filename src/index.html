@@ -28,7 +28,16 @@ R"RAW(
       }
     </style>
     <script>
+      const gateway = `ws://${window.location.hostname}/ws`;
+      var websocket;
+
+      function initWebSocket() {
+        console.log("Trying to open a WebSocket connection...");
+        websocket = new WebSocket(gateway);
+      }
+
       window.onload = () => {
+        initWebSocket();
         var btLed = document.querySelector("#btLed");
         function alternaBt(ligado) {
           if (ligado == 1) {
@@ -49,7 +58,11 @@ R"RAW(
 
         servoRange.addEventListener("input", (e) => {
           var angulo = e.target.value;
-          fetch("/servo", { method: "POST", body: JSON.stringify({ang:angulo})});
+          // fetch("/servo", {
+          //   method: "POST",
+          //   body: JSON.stringify({ ang: angulo }),
+          // });
+          websocket.send(`servo:${angulo}`);
         });
       };
     </script>

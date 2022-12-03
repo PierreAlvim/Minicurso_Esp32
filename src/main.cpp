@@ -11,9 +11,12 @@
 
 AsyncWebServer server(80);
 
+AsyncWebSocket ws("/ws");
+
 const char ssid[] = "House";
 const char password[] = "africaSul456";
 const char hostname[] = "Esp32_pierre";
+int ang = 0;
 
 #define SERNO_PIN 27
 #define LED_PIN 2
@@ -24,6 +27,29 @@ const char *homepage PROGMEM = {
 #include "index.html"
 };
 
+void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
+               AwsEventType type, void *arg, uint8_t *data, size_t len) {
+
+  if (type == WS_EVT_CONNECT) {
+
+    Serial.println("Websocket client connection received");
+
+  } else if (type == WS_EVT_DISCONNECT) {
+
+    Serial.println("Client disconnected");
+
+  } else if (type == WS_EVT_DATA) {
+    String s((char *)data);
+    if (s.startsWith("servo:")) {
+      ang = s.substring(6, len).toInt();
+      if (ang > 180)
+        ang = 180;
+      else if (ang < 0)
+        ang = 0;
+      myservo.write(ang);
+    }
+  }
+}
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -66,6 +92,8 @@ void setup() {
       request->send(412, "text/plain", "end");
     }
   });
+  ws.onEvent(onWsEvent);
+  server.addHandler(&ws);
 
   // server.on("/servo", HTTP_POST, [](AsyncWebServerRequest *request) {
   //   if (request->) {
